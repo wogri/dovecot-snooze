@@ -17,8 +17,8 @@
 
 # This is not an official Google product.
 
-"""
-A script to go through dovecot mailboxes and snooze mails until a given time.
+"""A script to go through dovecot mailboxes and snooze mails until a given time.
+
 Works like this: You need to have a predefined set of folders (see below how to
 subscribe your user to those folders), and this script will go through the
 folders every minute (so you have to set up a cron-job) and put an IMAP label
@@ -26,7 +26,7 @@ on them. The label will be called something like "MoveAt123456789" where the
 number is the timestamp when the mail should be moved back into the users
 inbox. So when you drag a mail into one of these folders it will stay there
 until the MoveAt Timestamp has been reached, and then the script will remove
-the IMAP label and move the mail back into the user's inbox.
+the IMAP label and move the mail back into the user's inbox and mark as new.
 Run the script from cron every minute like this:
 ./dovecot-snooze.py user1 user2 user3
 
@@ -45,11 +45,12 @@ doveadm mailbox create -s -u $user 'Snooze.Until 18:00'
 doveadm mailbox create -s -u $user 'Snooze.For 1 Hour'
 """
 
-import subprocess
-import re
-import datetime
 import argparse
+import datetime
+import re
+import subprocess
 import sys
+
 
 FOLDERS = ['Snooze.Until Friday 18:00',
            'Snooze.Until Monday 7:00',
@@ -62,20 +63,23 @@ def Debug(msg):
   if args.debug:
     sys.stdout.write(msg + '\n')
 
+
 def Error(msg):
   sys.stderr.write(msg + '\n')
+
 
 def UnixTime(mytime):
   epoch = datetime.datetime.fromtimestamp(0)
   return int((mytime - epoch).total_seconds())
 
 
-class Mail():
+class Mail(object):
+  """The class that handles snoozing and un-snoozing for a single e-mail."""
 
-  def __init__(self, uid, folder):
+  def __init__(self, uid, myfolder):
     self.uid = uid
     self.labels = []
-    self.folder = folder
+    self.folder = myfolder
 
   def CheckRelease(self):
     """Check if a mail is ready for release, then move it back to the inbox."""
@@ -121,12 +125,12 @@ class Mail():
                              self.folder,
                              'uid',
                              self.uid]):
-      Error("mail move failed!")
+      Error('mail move failed!')
 
   def FindSnooze(self):
     """Finds out how long to snooze a mail for.
 
-    returns: unix time when to un-snooze.
+    Returns: unix time when to un-snooze.
     """
     # find out if the Mail has been marked to move already
     for label in self.labels:
@@ -160,7 +164,7 @@ class Mail():
     else:
       return None
     unix_time = UnixTime(snooze_until)
-    Debug("snoozing %s until %s, this is at %d" % (self.uid, snooze_until,
+    Debug('snoozing %s until %s, this is at %d' % (self.uid, snooze_until,
                                                    unix_time))
     return 'MoveAt%d' % unix_time
 
