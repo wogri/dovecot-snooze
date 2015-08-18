@@ -31,3 +31,5 @@ doveadm mailbox create -s -u $user 'Snooze.Until Monday 7:00'
 doveadm mailbox create -s -u $user 'Snooze.Until 7:00'
 doveadm mailbox create -s -u $user 'Snooze.Until 18:00'
 doveadm mailbox create -s -u $user 'Snooze.For 1 Hour'
+
+more documentation on http://www.wogri.com/scripts/dovecot-snooze/
