@@ -19,23 +19,27 @@
 
 """A script to go through dovecot mailboxes and snooze mails until a given time.
 
-Works like this: You need to have a predefined set of folders (see below how to
-subscribe your user to those folders), and this script will go through the
-folders every minute (so you have to set up a cron-job) and put an IMAP label
-on them. The label will be called something like "MoveAt123456789" where the
-number is the timestamp when the mail should be moved back into the users
-inbox. So when you drag a mail into one of these folders it will stay there
-until the MoveAt Timestamp has been reached, and then the script will remove
-the IMAP label and move the mail back into the user's inbox and mark as new.
-Run the script from cron every minute like this:
+Works like this:
+
+Once you have a predefined set of folders (see below on how to
+subscribe your user to these folders), this script will go through the
+folders every minute (after setting up a cron-job) and add an IMAP label
+on the nested messages. The label will be called something like "MoveAt123456789",
+where the number is the timestamp in which when the mail should be moved back
+into the users inbox. So when you drag a mail into one of these folders it will
+stay there until the MoveAt Timestamp has been reached, and then the script
+will remove the IMAP label and move the mail back into the user's inbox and
+mark as new. Run the script from cron every minute like this:
+
 ./dovecot-snooze.py user1 user2 user3
 
 Add -h for help.
-By the way, we assume that the separator of your Snooze folder is a dot, not a
-slash. Unfortunately you can't change that currently. Send me a patch to fix
-this!
 
-to subscribe a new user:
+The separator syntax for your 'Snooze' folder can be a dot or a slash depending
+on your dovecot configuration. Be sure to update the paths in the 'FOLDERS' array
+to match your user's mailbox tree.
+
+To subscribe a new user:
 $ user=maryjane
 doveadm mailbox create -s -u $user 'Snooze'
 doveadm mailbox create -s -u $user 'Snooze.Until Friday 18:00'
@@ -141,22 +145,22 @@ class Mail(object):
     Debug('now is %d' % UnixTime(now))
     today = now.replace(hour=0, minute=0, second=0, microsecond=0)
     day_of_week = today.weekday()
-    if self.folder == 'Snooze.For 1 Hour':
+    if self.folder == FOLDERS[4]:
       snooze_until = now + datetime.timedelta(hours=1)
-    elif self.folder == 'Snooze.Until 18:00':
+    elif self.folder == FOLDERS[3]:
       snooze_until = today + datetime.timedelta(hours=18)
       if snooze_until < now:
         snooze_until += datetime.timedelta(days=1)
-    elif self.folder == 'Snooze.Until 7:00':
+    elif self.folder == FOLDERS[2]:
       snooze_until = today + datetime.timedelta(hours=7)
       if snooze_until < now:
         snooze_until += datetime.timedelta(days=1)
-    elif self.folder == 'Snooze.Until Monday 7:00':
+    elif self.folder == FOLDERS[1]:
       snooze_days = 7 - day_of_week
       if snooze_days == 0:
         snooze_days = 7
       snooze_until = today + datetime.timedelta(days=snooze_days, hours=7)
-    elif self.folder == 'Snooze.Until Friday 18:00':
+    elif self.folder == FOLDERS[0]:
       snooze_days = 4 - day_of_week
       if snooze_days < 1:
         snooze_days += 7
