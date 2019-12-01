@@ -4,24 +4,30 @@ Disclaimer: This is not an official Google product! This is the spare time
 project of a googler.
 
 This is a script to go through dovecot mailboxes and snooze mails until a given
-time.  Works like this: You need to have a predefined set of folders (see below
-how to subscribe your user to those folders), and this script will go through
-the folders every minute (so you have to set up a cron-job) and put an IMAP
-label on them. The label will be called something like "MoveAt123456789" where
-the number is the timestamp when the mail should be moved back into the users
-inbox. So when you drag a mail into one of these folders it will stay there
-until the MoveAt Timestamp has been reached, and then the script will remove
-the IMAP label and move the mail back into the user's inbox and mark it as new.
-Run the script from cron like this:
+time.  
+
+Works like this:
+
+Once you have a predefined set of folders (see below on how to
+subscribe your user to these folders), this script will go through the
+folders every minute (after setting up a cron-job) and add an IMAP label
+on the nested messages. The label will be called something like "MoveAt123456789",
+where the number is the timestamp in which when the mail should be moved back
+into the users inbox. So when you drag a mail into one of these folders it will
+stay there until the MoveAt Timestamp has been reached, and then the script
+will remove the IMAP label and move the mail back into the user's inbox and
+mark as new. Run the script from cron every minute like this:
+
 ./dovecot-snooze.py user1 user2 user3
+
 Add -h for more help.
 
 Example /etc/crontab entry:
 * * * * *   root  /usr/local/sbin/dovecot-snooze.py maryjane
 
-By the way, we assume that the separator of your Snooze folder and the
-subfolder is a dot, not a slash. Unfortunately you can't change that currently.
-Send me a patch to fix this!
+The separator syntax for your 'Snooze' folder can be a dot or a slash depending
+on your dovecot configuration. Be sure to update the paths in the 'FOLDERS' array
+to match your user's mailbox tree.
 
 to subscribe a new user:
 $ user=maryjane
