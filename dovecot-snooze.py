@@ -194,7 +194,7 @@ args = parser.parse_args()
 
 if not args.users:
   Error('The last argument of this program must be one or more users '
-        '(separated by spaces)')
+        '(separated by spaces). See --help for more details.')
   exit(1)
 
 for user in args.users:
