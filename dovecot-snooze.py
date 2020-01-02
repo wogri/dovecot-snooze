@@ -39,7 +39,10 @@ The separator syntax for your 'Snooze' folder can be a dot or a slash depending
 on your dovecot configuration. Be sure to update the paths in the 'FOLDERS' array
 to match your user's mailbox tree.
 
-To subscribe a new user:
+To subscribe new users:
+$ ./dovecot-snooze.py --create=1 user1 user2 user3
+
+Or to create the folders by hand:
 $ user=maryjane
 doveadm mailbox create -s -u $user 'Snooze'
 doveadm mailbox create -s -u $user 'Snooze.Until Friday 18:00'
@@ -180,6 +183,8 @@ parser = argparse.ArgumentParser(description=(
 parser.add_argument('--doveadm', type=str, nargs='?',
                     default='/usr/bin/doveadm', help=(
                         'path to doveadm binary, defaults to /usr/bin/doveadm'))
+parser.add_argument('--create', type=bool, nargs='?', default=False,
+                    help=('Create the mail folders'))
 parser.add_argument('--debug', type=bool, nargs='?', default=False,
                     help=('debug output, set to 1 or true to see more details '
                           'about what is going on.'))
@@ -193,8 +198,23 @@ if not args.users:
   exit(1)
 
 for user in args.users:
+  try:
+    if args.create:
+      Debug('Creating root folder')
+      cmd = [args.doveadm, 'mailbox', 'create', '-s', '-u', user, 'Snooze']
+      Debug(' '.join(cmd))
+      meta = subprocess.check_output(cmd)
+  except:
+    Error('unexpected Error!')
+
   for folder in FOLDERS:
     try:
+      if args.create:
+        Debug('Creating folder ' + folder)
+        cmd = [args.doveadm, 'mailbox', 'create', '-s', '-u', user, folder]
+        Debug(' '.join(cmd))
+        meta = subprocess.check_output(cmd)
+
       mails = []
       current_mail = None
       cmd = [args.doveadm, 'fetch', '-u', user, 'uid flags', 'mailbox', folder,
