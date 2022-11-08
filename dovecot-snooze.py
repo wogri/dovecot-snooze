@@ -205,7 +205,7 @@ for user in args.users:
       Debug(' '.join(cmd))
       meta = subprocess.check_output(cmd)
   except:
-    Error('unexpected Error!')
+    Error('unexpected Error while creating folder!')
 
   for folder in FOLDERS:
     try:
