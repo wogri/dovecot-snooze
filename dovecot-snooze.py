@@ -200,7 +200,7 @@ for user in args.users:
       cmd = [args.doveadm, 'fetch', '-u', user, 'uid flags', 'mailbox', folder,
              'UNDELETED']
       Debug(' '.join(cmd))
-      meta = subprocess.check_output(cmd)
+      meta = subprocess.check_output(cmd).decode()
       lines = meta.split('\n')
       for line in lines:
         result = re.search('uid: (.*)', line, re.IGNORECASE)
